@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
+use App\Services\QueryService;
 use DB, \App\User,\App\Post,\App\Savedpost;
 
 class HomeController extends Controller
@@ -13,9 +13,12 @@ class HomeController extends Controller
      *
      * @return void
      */
-    public function __construct()
+    protected $queryService;
+
+    public function __construct(QueryService $queryService)
     {
         $this->middleware('auth');
+        $this->queryService = $queryService;
     }
 
     /**
@@ -23,242 +26,245 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index()
-    {
-        if(count(\App\Info::where('user_id','=',auth()->user()->id)->get())==0){
-            $new= new \App\Info();
-            $new->user_id=auth()->user()->id;
-            $new->save();
-        }
-        $var['user']=auth()->user();
-        return view('home', $var);
+    // Welcome Controller
+    public function index(){
+        $var['topfoods'] = $this->queryService->getCheapestPost();
+        return view('welcome', $var);
     }
-    public function push(){
 
-        return view('push');
+    public function search(){
+        return view('searcher');
     }
-    public function sendpush(Request $req){
-        $new= new Post();
-        $new->name=$req->name;
-        $new->kind=$req->kind;
-        $new->price=$req->price;
-        $new->district=$req->district;
-        $new->province=$req->province;
-        $new->address=$req->address;
-        $new->picture=$req->picture;
-        $new->time=$req->time;
-        $new->user_id=auth()->user()->id;
-        $new->save();
-        $var['user']=auth()->user();
-        $var['post']=Post::where('user_id','=',$var['user']->id)->orderBy('id','DESC')->paginate(4);
-        return redirect('post');
-        
+
+    public function getProvince($district){
+        return DB::table('hanoidistrict')
+        ->where('district', '=', $district)
+        ->select('province')
+        ->get();
     }
-    public function profile($id){
-        $var['user']=User::find($id);
-        return view('profile', $var);
+
+    public function getFood(Request $request){
+        $data = $this->queryService->getPostWithUser()->where('price', '<', $request->price);
+
+        if($request->kind != "Tất cả") $data = $data->where('kind', '=', $request->kind);
+        if($request->district != "Tất cả") $data = $data->where('district', '=', $request->district);
+        if($request->province != "Tất cả") $data = $data->where('province', '=', $request->province);
+        return $data->orderBy('id','DESC')->get();
     }
-    /*
-    public function showall(){
-        $var['post']=Post::all();
-        return view('showall', $var);
-    }*/
-    public function newsavedpost($id){
-        if(count(auth()->user()->savedpost
-        ->where('post_id','=',$id))==0){
-            $new= new Savedpost();
-            $new->mode="Tất cả";
-            $new->user_id=auth()->user()->id;
-            $new->post_id=$id;
-            $new->save();
-        }
-        else echo "   bạn đã lưu rồi";
-        //return back();
+    // User Controller
+    public function selfInfo(){
+        $this->queryService->createUserInfo();
+        $var['user'] = auth()->user();
+        return view('me', $var);
     }
-    public function newschedule($id){
-        $p=Post::find($id);
-        /*
-        if(count(\App\Schedule::where('user_id','=',auth()->user()->id)
-        ->where('post_id','=',$id)->get())==0){
-            echo "New schedule";
-        }
-        else echo "   Bạn đã có schedule rồi";
-        */
-        return view('personal.newschedule', compact('p'));
+
+    public function userProfile($id){
+        $var['user'] = $this->queryService->findUser($id);
+        $var['post'] = $var['user']->post()->with('user', 'user.info')->paginate(4);
+        return view('personal.profile', $var);
     }
-    public function insertschedule(Request $req){
-        $new= new \App\Schedule();
-        $new->time=$req->time;
-        $new->mode=$req->mode;
-        $new->user_id=auth()->user()->id;
-        $new->post_id=$req->post_id;
-        $new->save();
-        $var['schedule']=\App\Schedule::where('user_id','=',auth()->user()->id)->orderBy('id', 'DESC')->paginate(4);
-        return redirect('schedule');
+
+    public function updateUser($id){
+        $var['user'] = $this->queryService->findUser($id);
+        return view('personal.update-user', $var);
     }
-    public function update($name, $id, $mode=""){
-        $var['isUser']="none";
-        $var['isPost']="none";
-        $var['isSchedule']="none";
-        if($name=="savedpost"){
-            /*$sp=\App\Savedpost::find($id);
-            if($mode=="all") $sp->mode="Tất cả";
-            if($mode=="only") $sp->mode="Chỉ mình tôi";
-            $sp->save();*/
-            $sp=DB::table('saved_posts')->where('id','=',$id);
-            if($mode=="all") $sp->update(["mode"=>"Tất cả"]);
-            if($mode=="only") $sp->update(["mode"=>"Chỉ mình tôi"]);
-            return back();
-        }
-        if($name=="user"){
-            $var['isUser']="block";
-            $var['user']=User::find($id);
-        }
-        if($name=="post"){
-            $var['isPost']="block";
-            $var['post']=Post::find($id);
-        }
-        if($name=="schedule"){
-            $var['isSchedule']="block";
-            $var['schedule']=\App\Schedule::find($id);
-        }
-        return view('update', $var);
+
+    public function insertUser(Request $request){
+        $this->queryService->updateUser($request->only(['birthdate', 'workplace', 'avatar']));
+        return redirect()->route('self_info');
     }
-    public function delete($name, $id){
-        if($name=="post"){
-            $post=\App\Post::find($id);
-            $schedule=DB::table('schedules')
-            ->where('post_id','=',$id)
-            ->get();
-            foreach($schedule as $s){
-                DB::table('attendees')
-                ->where('schedule_id','=',$s->id)
-                ->delete();
-            }
-            $schedule=DB::table('schedules')
-            ->where('post_id','=',$id)
-            ->delete();
-            $savedpost=DB::table('saved_posts')->where('post_id','=',$id);
-            $savedpost->delete();
-            $post->delete();
-            return back();
-        }
-        if($name=="savedpost"){
-            $sp=DB::table('saved_posts')->where('id','=',$id);
-            $sp->delete();
-            return back();
-        }
-        if($name=="schedule"){
-            $sch=\App\Schedule::find($id);
-            DB::table('attendees')
-            ->where('schedule_id','=',$sch->id)
-            ->delete();
-            $sch->delete();
-            return back();
-        }
-        if($name=="attend"){
-            $a=\App\Attendee::find($id);
-            $a->delete();
-            return back();
-        }
-    }
+
+    // Post Controller
     public function post(){
-        $var['user']=auth()->user();
-        $var['post']=Post::where('user_id','=',$var['user']->id)->orderBy('id','DESC')->paginate(4);
+        $var['post'] = $this->queryService->readPost();
         return view('personal.post', $var);
     }
+
+    public function newPost(){
+        return view('personal.new-post');
+    }
+
+    public function updatePost($id){
+         $var['post'] = $this->queryService->findPost($id);
+        return view('personal.new-post', $var);
+    }
+
+    public function insertPost(Request $request){
+        if($request['id'] != ''){
+            // update
+            $this->queryService->updatePost($request->all());
+        }else{
+            // create
+            $request['user_id'] = auth()->user()->id;
+            $this->queryService->createPost($request->all());
+        }
+        return redirect()->route('post'); 
+    }
+
+    public function deletePost($id){
+        $this->queryService->deletePost($id);
+        return back();
+    }
+
+    // Savedpost Controller
     public function savedpost()
     {
-        $var['user']=auth()->user();
-        $var['savedpost']=\App\SavedPost::where('user_id','=',$var['user']->id)->orderBy('id', 'DESC')->paginate(4);
+        $var['savedpost'] = $this->queryService->readSavedpost();
         return view('personal.savedpost', $var);
     }
+
+    public function newSavedpost($id){
+        $user = auth()->user();
+        if(count($user->savedpost
+        ->where('post_id', '=', $id)) == 0){
+            $this->queryService->createSavedpost([
+                'mode' => 'Tất cả',
+                'user_id' => $user->id,
+                'post_id' => $id,
+            ]);
+            return 1;
+        }
+        return 0;
+    }
+    public function updateSavedpost($id, $mode){
+        $this->queryService->updateSavedpost($id, $mode);
+        return back();
+    }
+
+    public function deleteSavedpost($id){
+        $this->queryService->deleteSavedpost($id);
+        return back();
+    }
+
+    // Schedule Controller
     public function schedule()
     {
-        $var['user']=auth()->user();
-        $var['schedule']=\App\Schedule::where('user_id','=',$var['user']->id)->orderBy('id', 'DESC')->paginate(4);
+        $var['schedule'] = $this->queryService->readSchedule();
+        $var['attended'] = auth()->user()->attended;
         return view('personal.schedule', $var);
     }
+    
+    public function newSchedule($id){
+        $var['post'] = $this->queryService->findPost($id);
+        return view('personal.new-schedule', $var);
+    }
+
+    public function updateSchedule($id){
+        $var['schedule'] = $this->queryService->findSchedule($id);
+        $var['post'] = $var['schedule']->post;
+        return view('personal.new-schedule', $var);
+    }
+
+    public function insertSchedule(Request $request){
+        if($request->id != ''){
+            $this->queryService->updateSchedule($request->only('id', 'time', 'mode'));
+        }else{
+            $request['user_id'] = auth()->user()->id;
+            $this->queryService->createSchedule($request->all());
+        }
+        return redirect()->route('schedule');
+    }
+    
+    public function deleteSchedule($id){
+        $this->queryService->deleteSchedule($id);
+        return back();
+    }
+
+    public function deleteAttendee($id){
+        $this->queryService->deleteAttendee($id);
+        return back();
+    }
+
+    // News Controller
+    public function news(){
+        $var['news'] = $this->queryService->publicSchedule();
+        return view('personal.news', $var);
+    }
+
+    public function attend($id){
+        $user = auth()->user();
+        if(!$this->queryService->hasAttended($user->id, $id)){
+            $this->queryService->createAttendee([
+                'user_id' => $user->id,
+                'schedule_id' => $id
+                ]);
+            return 1;
+        }
+        return 0;
+    }
+
+    // Friend Controller
     public function friend()
     {
-        $var['user']=auth()->user();
-        $var['friend']=$var['user']->friend;
-        $var['friendspost']=collect();
-        foreach($var['user']->friend as $f){
-            foreach($f->post as $p){
-                $var['friendspost']->push($p);
-            }
-        }
-        $var['friendspost']=$var['friendspost']->sortByDesc('id');
+        $var['user'] = auth()->user();
+        $var['friend'] = $var['user']->friend;
         
-        $var['mightknow']=collect();
-        $savedpost=auth()->user()->savedpost;
+        $var['mightknow'] = collect();
+        $savedpost = auth()->user()->savedpost;
         foreach($savedpost as $sp){
-            $postsaver=$sp->post->savedpost;
+            $postsaver = $sp->post->savedpost;
             foreach($postsaver as $saver){
                 $var['mightknow']->push($saver->user);
             }
         }
-        $var['mightknow']=$var['mightknow']->unique('id');
+        $var['mightknow'] = $var['mightknow']->unique('id');
         return view('personal.friend', $var);
     }
+
+    public function searchFriend($input){
+        return $this->queryService->findUserByName($input);
+    }
+
     public function addfriend($id){
-        $friend=DB::table('friend')
-        ->where('subject_id','=',auth()->user()->id)
-        ->where('object_id','=',$id)->get();
-        if(count($friend)==0){
+        $userId = auth()->user()->id;
+        $friend = DB::table('friend')
+        ->where('subject_id', '=', $userId)
+        ->where('object_id', '=', $id)->get();
+        if(count($friend) == 0){
             DB::table('friend')->insert([
-            "subject_id"=>auth()->user()->id,
-            "object_id"=>$id
+            "subject_id" => $userId,
+            "object_id" => $id
             ]);
+            return 1;
         }
-        else echo "   bạn đã lưu rồi";
+        return 0;
     }
+
     public function dropfriend($id){
-        $friend=DB::table('friend')
-        ->where('subject_id','=',auth()->user()->id)
-        ->where('object_id','=',$id)->get();
-        if(count($friend)!=0){
+        $userId = auth()->user()->id;
+        $friend = DB::table('friend')
+        ->where('subject_id', '=', $userId)
+        ->where('object_id', '=', $id)->get();
+        if(count($friend) != 0){
             DB::table('friend')
-        ->where('subject_id','=',auth()->user()->id)
-        ->where('object_id','=',$id)->delete();
+            ->where('subject_id', '=', $userId)
+            ->where('object_id', '=', $id)->delete();
+            return 1;
         }
-        else echo "   bạn đã lưu rồi";
+        return 0;
     }
+
+    // Message Controller
     public function message(){
-        $message=collect();
-        foreach(\App\Message::where('subject_id','=',auth()->user()->id)
-        ->select('object_id')
-        ->distinct()
-        ->get() as $o){
-            $message->push($o);
-        }
-        foreach(\App\Message::where('object_id','=',auth()->user()->id)
-        ->select('subject_id')
-        ->distinct()
-        ->get() as $u){
-            foreach($message as $m){
-                if($u->object_id==$m->subject_id){
-                    $message->pop($m);
-                }
-            }
-            $message->push($u);
-        }
-        //$message=$message->unique('subject_id','object_id');
-        return view('personal.message', compact('message'));
+        $var['message'] = $this->queryService->getAllMessages();
+        return view('personal.message', $var);
     }
+
     public function inbox($id){
-        $object=\App\User::find($id);
-        $inbox=collect();
-        foreach(\App\Message::where('subject_id','=',auth()->user()->id)
-        ->where('object_id','=',$id)->get() as $m){
-            $inbox->push($m);
-        }
-        foreach(\App\Message::where('object_id','=',auth()->user()->id)
-        ->where('subject_id','=',$id)->get() as $m){
-            $inbox->push($m);
-        }
-        $inbox=$inbox->sortBy('id');
-        return view('personal.inbox', compact('inbox', 'object'));
+        $var['object'] =  $this->queryService->findUser($id);
+        $var['inbox'] = $this->queryService->getMessageWith($id);
+        $var['inbox'] = $var['inbox']->sortBy('id');
+        return view('personal.inbox', $var);
+    }
+
+    public function sendMessage(Request $req) {
+        $data['content'] = $req->content;
+        $data['subject_id'] = auth()->user()->id;
+        $data['object_id'] = $req->id;
+        $this->queryService->createMessage($data);
+    }
+
+    public function refresh($id) {
+        return $this->queryService->getMessageWith($id);
     }
 }

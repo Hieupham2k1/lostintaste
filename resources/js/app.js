@@ -30,14 +30,14 @@ window.Vue = require('vue');
 
 import searcher from './components/searcher.vue'
 import district from './components/district.vue'
-import ajax from './components/ajax.vue'
+import Post from './components/post.vue'
 
 const app = new Vue({
     el: '#app',
     components:{
         searcher,
         district,
-        ajax
+        Post
     }
 
 });
