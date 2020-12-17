@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\QueryService;
 use DB, \App\User,\App\Post,\App\Savedpost;
+use Storage;
 
 class HomeController extends Controller
 {
@@ -70,7 +71,26 @@ class HomeController extends Controller
     }
 
     public function insertUser(Request $request){
-        $this->queryService->updateUser($request->only(['birthdate', 'workplace', 'avatar']));
+        $userId = auth()->user()->id;
+        if($request['is_link']){
+            $filename = $userId . '.png';
+            Storage::putFileAs('public/user-avatar', $request->avatar, $filename);
+        }
+        else{
+            // check for valid file
+            if ($request->hasFile('avatar')) {
+                if ($request->file('avatar')->isValid()) {
+                    $filename = $userId . $request->avatar->extension();
+                    $request->avatar->storeAs('public/user-avatar', $filename);
+                }
+            }
+        }
+        $array = [
+            'birthdate' => $request->birthdate,
+            'workplace' => $request->workplace,
+            'avatar' => '/user-avatar/' . $filename,
+        ];
+        $this->queryService->updateUser($array);
         return redirect()->route('self_info');
     }
 
@@ -92,12 +112,32 @@ class HomeController extends Controller
     public function insertPost(Request $request){
         if($request['id'] != ''){
             // update
-            $this->queryService->updatePost($request->all());
+            $postId = $request['id'];
+            $array = $request->all();
         }else{
             // create
             $request['user_id'] = auth()->user()->id;
-            $this->queryService->createPost($request->all());
+            $post = $this->queryService->createPost($request->except('picture'));
+            $postId = $post->id;
         }
+
+        if($request['is_link']){
+            $filename = $postId . '.png';
+            Storage::putFileAs('public/post-picture', $request->picture, $filename);
+        }
+        else{
+            // check for valid file
+            if ($request->hasFile('picture')) {
+                if ($request->file('picture')->isValid()) {
+                    $filename = $postId . $request->picture->extension();
+                    $request->picture->storeAs('public/post-picture', $filename);
+                }
+            }
+        }
+        $array['id'] = $postId;
+        $array['picture'] = '/post-picture/' . $filename;
+        $this->queryService->updatePost($array);
+
         return redirect()->route('post'); 
     }
 
@@ -257,10 +297,10 @@ class HomeController extends Controller
         return view('personal.inbox', $var);
     }
 
-    public function sendMessage(Request $req) {
-        $data['content'] = $req->content;
+    public function sendMessage(Request $request) {
+        $data['content'] = $request->content;
         $data['subject_id'] = auth()->user()->id;
-        $data['object_id'] = $req->id;
+        $data['object_id'] = $request->id;
         $this->queryService->createMessage($data);
     }
 
