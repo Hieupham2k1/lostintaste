@@ -11,7 +11,7 @@
             <b> Đăng bởi:
                 <img :src="data.user.info.avatar" width="10%" height="10%"
                 style="border-radius: 50% 50% 50% 50%" />
-                <a :href="'profile/'+data.user.id">
+                <a :href="'/lostintaste/profile/'+data.user.id">
                     {{ data.user.name }}
                 </a>
             </b> 
@@ -24,7 +24,7 @@
                 <br>
                 Người tham gia:<br>
                 <div v-for="attendee in propdata.attendee" :key="attendee.id">
-                    <a :href="'profile/'+attendee.user.id">
+                    <a :href="'/lostintaste/profile/'+attendee.user.id">
                         {{ attendee.user.name }}
                     </a>
                 </div>
@@ -45,8 +45,8 @@
                             Hiển thị với: {{ propdata.mode }}
                         </button>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                            <a class="dropdown-item" :href="'update/savedpost/' + propdata.id + '/all'">Tất cả</a>
-                            <a class="dropdown-item" :href="'update/savedpost/' + propdata.id + '/only'">Chỉ mình tôi</a>
+                            <a class="dropdown-item" :href="'/lostintaste/update/savedpost/' + propdata.id + '/all'">Tất cả</a>
+                            <a class="dropdown-item" :href="'/lostintaste/update/savedpost/' + propdata.id + '/only'">Chỉ mình tôi</a>
                         </div>
                     </div>
                 </div>
@@ -57,10 +57,10 @@
                             Update
                         </button>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                            <a :href="'delete/' + page + '/' + propdata.id" style="text-decoration: none">
+                            <a :href="'/lostintaste/delete/' + page + '/' + propdata.id" style="text-decoration: none">
                                 <button class="btn btn-outline-danger">Delete</button>
                             </a>
-                            <a :href="'update/' + page + '/' + propdata.id" style="text-decoration: none" 
+                            <a :href="'/lostintaste/update/' + page + '/' + propdata.id" style="text-decoration: none" 
                             v-if="page == 'post' || page == 'schedule'">
                                 <button class="btn btn-outline-success">Update</button>
                             </a>
@@ -69,7 +69,7 @@
                 </div>
                 <!-- nut schedule -->
                 <div class="col" v-if="page == 'post' || page == 'savedpost' || page == 'profile'">
-                    <a :href="'newschedule/' + data.id" class="btn btn-outline-primary">Schedule</a>
+                    <a :href="'/lostintaste/newschedule/' + data.id" class="btn btn-outline-primary">Schedule</a>
                 </div>
                 <!-- nút Tham gia -->
                 <div class="col" v-if="page == 'news'">
@@ -112,7 +112,7 @@ export default {
                 alert("Bạn đã lưu bài này rồi");
                 return;
             }
-            axios.get("newsavedpost/"+id)
+            axios.get("/lostintaste/newsavedpost/"+id)
             .then(
                 (response)=>{
                     this.isSaved = true;
@@ -132,7 +132,7 @@ export default {
                 alert("Bạn đã tham gia rồi");
                 return;
             }
-            axios.get("/attend/"+id)
+            axios.get("/lostintaste/attend/"+id)
             .then(
                 (response)=>{
                     this.isAttended = true;

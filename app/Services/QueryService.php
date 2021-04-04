@@ -2,7 +2,13 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Auth;
-use App\User, App\Post, App\SavedPost, App\Schedule, App\Attendee, App\Info, App\Message;
+use Modules\LostinTaste\Entities\User;
+use Modules\LostinTaste\Entities\Post;
+use Modules\LostinTaste\Entities\SavedPost;
+use Modules\LostinTaste\Entities\Schedule;
+use Modules\LostinTaste\Entities\Attendee;
+use Modules\LostinTaste\Entities\Info;
+use Modules\LostinTaste\Entities\Message;
 
 class QueryService 
 {
@@ -16,7 +22,7 @@ class QueryService
     public function createUserInfo()
     {
         $user = auth()->user();
-            return (!$user->info) ? $user->info()->create(['id' => $user->id]) : '';
+            return (!$user->info) ? $user->info()->create(['user_id' => $user->id]) : '';
     }
 
     public function updateUser($array)

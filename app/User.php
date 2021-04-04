@@ -36,25 +36,26 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    protected $lostintaste = "Modules\LostinTaste\Entities\\";
+
     public function Info(){
-        return $this->hasOne('App\Info');
+        return $this->hasOne($this->lostintaste.'Info');
     }
     public function Post(){
-        return $this->hasMany('App\Post');
+        return $this->hasMany($this->lostintaste.'Post');
     }
     public function SavedPost(){
-        return $this->hasMany('App\SavedPost');
+        return $this->hasMany($this->lostintaste.'SavedPost');
     }
     public function Schedule(){
-        return $this->hasMany('App\Schedule');
+        return $this->hasMany($this->lostintaste.'Schedule');
     }
     public function Attended(){
-        return $this->hasMany('App\Attendee');
+        return $this->hasMany($this->lostintaste.'Attendee');
     }
     public function Friend()
     {
         return $this->belongsToMany('App\User','friend','subject_id','object_id');
-    //('the object model name','pivot table','this model id',
-    //'the object model id')
     }
 }

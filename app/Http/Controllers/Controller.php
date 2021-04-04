@@ -14,4 +14,8 @@ class Controller extends BaseController
     public function searcher(Request $req){
         echo $req->name." ".$req->number;
     }
+
+    public function aboutMe(){
+        return view('about-me');
+    }
 }

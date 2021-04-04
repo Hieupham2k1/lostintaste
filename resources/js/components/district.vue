@@ -66,7 +66,7 @@ export default {
     methods:{
         change(){
             this.$emit('select-change', {type: 'district', value: this.district});
-            return axios.get("/getprovince/" + this.district)
+            return axios.get("/lostintaste/getprovince/" + this.district)
             .then(
                 (response) => {
                     this.provinces = response.data;
