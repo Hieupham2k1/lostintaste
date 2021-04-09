@@ -1,5 +1,5 @@
 <template>
-    <div class="grid" :class="{ 'text-danger': flow.includes(1) }">
+    <div class="grid cursor-move" :class="{ 'text-success': isChosen, 'text-danger': flow.includes(1) && !isChosen, }" @click="chosen">
         <div class="row">
             <div class="col"></div><div class="col">{{ open[0] }}</div><div class="col"></div>
         </div>
@@ -21,26 +21,23 @@ export default {
         return {
             open: [],
             flow: [0, 0, 0, 0],
+            isChosen: false,
         }
     },
     methods:{
         spin(){
-            if(this.position[0] == this.position[1] && this.position[0] == 1){
-                return;
-            }
-            if(this.position[0] == this.position[1] && this.position[0] == this.$parent.width){
-                return;
-            }
+            if(this.$parent.isUnmovable(this.position)) return;
             let temp = this.open.pop();
             this.open.unshift(temp);
             
             this.emitChangeFlow();
         },
         emitChangeFlow(){
-            this.$emit('changeFlow', { 
-                'position': this.position, 
-                'open': this.open, 
-            });
+            this.$emit('changeFlow', this.position);
+        },
+        chosen(event){
+            if(event.target.isEqualNode(document.querySelector('div.col.cursor-pointer'))) return;
+            this.$emit('chosen', this.position);
         }
     },
     created(){
@@ -65,6 +62,9 @@ export default {
         width: 100px;
         height: 100px;
         border: 1px solid;
+    }
+    .cursor-move{
+        cursor: move;
     }
     .cursor-pointer{
         cursor: pointer;

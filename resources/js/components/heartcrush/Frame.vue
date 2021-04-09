@@ -5,8 +5,9 @@
                 <Cell 
                     v-for="w in width" :key="w" 
                     :position="[h, w]"
-                    @changeFlow="changeFlow"
                     :ref="'cell-' + h + '-' + w"
+                    @changeFlow="changeFlow"
+                    @chosen="cellChosen"
                 />
             </div>
         </div>
@@ -22,11 +23,11 @@ export default {
     data(){
         return {
             width: 10,
+            chosenCellPosition: [],
         }
     },
     methods:{
-        changeFlow(event){
-            let { position, open } = event;
+        changeFlow(position){
             let refNames = [
                 `cell-${ position[0] - 1 }-${ position[1] }`,
                 `cell-${ position[0] }-${ position[1] + 1 }`,
@@ -36,7 +37,7 @@ export default {
 
             let currentCell = this.$refs[`cell-${ position[0] }-${ position[1] }`]?.[0];
 
-            for(let i in refNames){
+            for(let i in refNames){ // update current cell
                 let neighborCell = this.$refs[refNames[i]]?.[0];
                 if(!neighborCell) continue;
 
@@ -46,10 +47,10 @@ export default {
                 currentCell.flow[i] = (
                     neighborCell.flow.includes(1) & // if neighbor cell has flow
                     neighborCell.flow[opositeSide] != 1 & // but not from current cell
-                    neighborCell.open[opositeSide] & open[i] // and neighbor cell conects with current cell
+                    neighborCell.open[opositeSide] & currentCell.open[i] // and neighbor cell conects with current cell
                 ); // then current cell has flow, else not
             }
-            for(let i in refNames){
+            for(let i in refNames){ // update neighbor cells
                 let neighborCell = this.$refs[refNames[i]]?.[0];
                 if(!neighborCell) continue;
 
@@ -61,7 +62,7 @@ export default {
                 neighborCell.flow[opositeSide] = ( // similar as above
                     currentCell.flow.includes(1) & 
                     currentCell.flow[i] != 1 & 
-                    open[i] & neighborCell.open[opositeSide]
+                    currentCell.open[i] & neighborCell.open[opositeSide]
                 );
                 neighborCell.$forceUpdate();
 
@@ -70,6 +71,38 @@ export default {
                 }
             }
         },
+        cellChosen(position){
+            if(this.isUnmovable(position)) return;
+            let chosenCell = this.$refs[`cell-${ this.chosenCellPosition[0] }-${ this.chosenCellPosition[1] }`]?.[0];
+            let targetCell = this.$refs[`cell-${ position[0] }-${ position[1] }`]?.[0];
+            if(this.chosenCellPosition.length == 0){
+                this.chosenCellPosition = [...position];
+                targetCell.isChosen = true; // target cell is currently chosen cell due to its position
+                return;
+            }
+            this.chosenCellPosition = [];
+            chosenCell.isChosen = false;
+
+            let heightDiff = Math.abs(this.chosenCellPosition[0] - position[0]);
+            let widthDiff  = Math.abs(this.chosenCellPosition[1] - position[1]);
+            if( // if target cell is out of reach or is current cell, do nothing
+                heightDiff > 1 || 
+                widthDiff > 1  ||
+                heightDiff == widthDiff
+            ){
+                return;
+            }
+
+            let temp = [...chosenCell.open];
+            chosenCell.open = [...targetCell.open];
+            targetCell.open = [...temp];
+
+            chosenCell.emitChangeFlow();
+            targetCell.emitChangeFlow();
+        },
+        isUnmovable(position){
+            return position[0] == position[1] && (position[0] == 1 || position[0] == this.width);
+        }
     },
     created(){
         
