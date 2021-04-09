@@ -32,12 +32,20 @@ import searcher from './components/searcher.vue'
 import district from './components/district.vue'
 import Post from './components/post.vue'
 
+import HeartCrushApp from './components/heartcrush/App.vue'
+
 const app = new Vue({
     el: '#app',
     components:{
         searcher,
         district,
-        Post
+        Post,
     }
+});
 
+const heartcrush = new Vue({
+    el: '#heartcrush',
+    components:{
+        HeartCrushApp,
+    },
 });
