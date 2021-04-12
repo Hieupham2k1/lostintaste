@@ -1,5 +1,5 @@
 <template>
-    <div class="grid cursor-move" @click="chosen">
+    <div class="grid cursor-move rounded" @click="chosen">
         <div class="row height-33">
             <div class="col"></div>
             <div class="col" :class="open[0] ? 'pipe pipe-top ' + pipeColor() : ''">&nbsp;</div>
@@ -49,14 +49,16 @@ export default {
             return this.isChosen ? 'pipe-glow' : this.flow.includes(1) ? 'pipe-red' : 'pipe-grey';
         }
     },
-    created(){
+    mounted(){
         if(this.position[0] == this.position[1] && this.position[0] == 1){
             this.open = [0, 1, 0, 0];
             this.flow = [1, 0, 0, 1]; // flow must not come from other cells
+            this.$el.classList.add('red-heart');
             return;
         }
         if(this.position[0] == this.position[1] && this.position[0] == this.$parent.width){
             this.open = [0, 0, 0, 1];
+            this.$el.classList.add('black-heart');
             return;
         }
         for(let i = 0; i < 4; i++){
@@ -87,12 +89,26 @@ export default {
     .height-33{
         height: 33%;
     }
+
+    .red-heart{
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-image: url('/picture/heartcrush/red-heart.png');
+    }
+    .black-heart{
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-image: url('/picture/heartcrush/black-heart.png');
+    }
+    
+
     .cursor-move{
         cursor: move;
     }
     .cursor-pointer{
         cursor: pointer;
     }
+
     .pipe::before{
         content: "";
         position: absolute;

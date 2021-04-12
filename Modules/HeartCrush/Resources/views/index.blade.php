@@ -6,4 +6,4 @@
     <div id="heartcrush">
         <Heart-Crush-App />
     </div>
-    @endsection
+@endsection
