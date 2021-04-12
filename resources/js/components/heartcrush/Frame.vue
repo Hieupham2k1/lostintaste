@@ -1,5 +1,6 @@
 <template>
-    <div class="row justify-content-center">
+    <div class="overflow-auto row">
+        <div class="col"></div>
         <div>
             <div class="row" v-for="h in width" :key="h">
                 <Cell 
@@ -11,6 +12,7 @@
                 />
             </div>
         </div>
+        <div class="col"></div>
     </div>
 </template>
 
@@ -36,6 +38,8 @@ export default {
             ];
 
             let currentCell = this.$refs[`cell-${ position[0] }-${ position[1] }`]?.[0];
+
+            if(this.chosenCellPosition.length != 0) this.setChosenCellPosition([]); // if changing flow then non is chosen
 
             for(let i in refNames){ // update current cell
                 let neighborCell = this.$refs[refNames[i]]?.[0];
@@ -76,15 +80,15 @@ export default {
             let chosenCell = this.$refs[`cell-${ this.chosenCellPosition[0] }-${ this.chosenCellPosition[1] }`]?.[0];
             let targetCell = this.$refs[`cell-${ position[0] }-${ position[1] }`]?.[0];
             if(this.chosenCellPosition.length == 0){
-                this.chosenCellPosition = [...position];
-                targetCell.isChosen = true; // target cell is currently chosen cell due to its position
+                this.setChosenCellPosition(position);
                 return;
             }
-            this.chosenCellPosition = [];
-            chosenCell.isChosen = false;
 
             let heightDiff = Math.abs(this.chosenCellPosition[0] - position[0]);
             let widthDiff  = Math.abs(this.chosenCellPosition[1] - position[1]);
+            
+            this.setChosenCellPosition([]); // this code must be here to preserve this.chosenCellPosition for heightDiff and widthDiff
+
             if( // if target cell is out of reach or is current cell, do nothing
                 heightDiff > 1 || 
                 widthDiff > 1  ||
@@ -102,6 +106,13 @@ export default {
         },
         isUnmovable(position){
             return position[0] == position[1] && (position[0] == 1 || position[0] == this.width);
+        },
+        setChosenCellPosition(position){
+            let chosenCell = this.$refs[`cell-${ this.chosenCellPosition[0] }-${ this.chosenCellPosition[1] }`]?.[0];
+            if(chosenCell) chosenCell.isChosen = position.length != 0;
+            this.chosenCellPosition = [...position];
+            chosenCell = this.$refs[`cell-${ this.chosenCellPosition[0] }-${ this.chosenCellPosition[1] }`]?.[0];
+            if(chosenCell) chosenCell.isChosen = position.length != 0;
         }
     },
     created(){
