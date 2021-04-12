@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>HeartCrush</title>
         <!-- Scripts -->
         <script src="{{ asset('js/app.js') }}" defer></script>
 
@@ -10,16 +12,15 @@
         <link href="{{ asset('css/app.css') }}" rel="stylesheet">
         <!-- Font Awsome -->
         <link rel="stylesheet" href="{{ asset('dist/css/all.min.css') }}">
+
+       {{-- Laravel Mix - CSS File --}}
+       {{-- <link rel="stylesheet" href="{{ mix('css/heartcrush.css') }}"> --}}
+
     </head>
     <body>
-        <div>
-            Hi, i'm Phạm Trung Hiếu.
-        </div>
-        <div>
-            My Projects:
-            <div><a href="{{ route('lostintaste.welcome') }}">Lost in Taste</a></div>
-            <div><a href="{{ route('heartcrush.index') }}">Heart Crush</a></div>
-            @extends('vue-apps', ['exclude' => ''])
-        </div>
+        @yield('content')
+
+        {{-- Laravel Mix - JS File --}}
+        {{-- <script src="{{ mix('js/heartcrush.js') }}"></script> --}}
     </body>
 </html>

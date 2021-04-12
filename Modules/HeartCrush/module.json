@@ -1,0 +1,13 @@
+{
+    "name": "HeartCrush",
+    "alias": "heartcrush",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\HeartCrush\\Providers\\HeartCrushServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

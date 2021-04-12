@@ -52,6 +52,7 @@
     }
 </style>
 <body>
+    @extends('vue-apps', ['exclude' => 'app'])
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-yum shadow-lg pb-5">
             <div class="container">
