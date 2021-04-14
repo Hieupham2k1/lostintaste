@@ -35,6 +35,7 @@ export default {
             if(this.$parent.isUnmovable(this.position)) return;
             let temp = this.open.pop();
             this.open.unshift(temp);
+            this.$parent.moveCount--;
 
             this.emitChangeFlow();
         },
@@ -47,6 +48,14 @@ export default {
         },
         pipeColor(){
             return this.isChosen ? 'pipe-glow' : this.flow.includes(1) ? 'pipe-red' : 'pipe-grey';
+        },
+        setOpenRandomly(min = 0){
+            while(this.open.length == 0 || this.open.reduce((sum, curr) => sum + curr, 0) < min){
+                this.open = [];
+                for(let i = 0; i < 4; i++){
+                    this.open.push(parseInt(Math.random() * 100) % 2);
+                }
+            }
         }
     },
     mounted(){
@@ -61,9 +70,7 @@ export default {
             this.$el.classList.add('black-heart');
             return;
         }
-        for(let i = 0; i < 4; i++){
-            this.open.push(parseInt(Math.random() * 100) % 2);
-        }
+        this.setOpenRandomly();
     }
 }
 </script>
