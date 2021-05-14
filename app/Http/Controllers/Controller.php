@@ -11,9 +11,6 @@ use Illuminate\Http\Request;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
-    public function searcher(Request $req){
-        echo $req->name." ".$req->number;
-    }
 
     public function aboutMe(){
         return view('about-me');

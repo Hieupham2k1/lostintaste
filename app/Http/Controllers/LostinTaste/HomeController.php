@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\LostinTaste;
 
 use Illuminate\Http\Request;
-use App\Services\QueryService;
+use App\Services\LostinTaste\QueryService;
+use App\Services\InitDataBase;
 use Illuminate\Routing\Controller;
 use DB;
 use Storage;
@@ -21,6 +22,7 @@ class HomeController extends Controller
     {
         $this->middleware('auth')->except(['index', 'search', 'getProvince', 'getFood']);
         $this->queryService = $queryService;
+        new InitDataBase();
     }
 
     /**
@@ -75,7 +77,7 @@ class HomeController extends Controller
         $userId = auth()->user()->id;
         if($request['is_link']){
             $filename = $userId . '.png';
-            Storage::putFileAs('public/user-avatar', $request->avatar, $filename);
+            if($request->avatar) Storage::putFileAs('public/user-avatar', $request->avatar, $filename);
         }
         else{
             // check for valid file
@@ -124,7 +126,7 @@ class HomeController extends Controller
 
         if($request['is_link']){
             $filename = $postId . '.png';
-            Storage::putFileAs('public/post-picture', $request->picture, $filename);
+            if($request->picture) Storage::putFileAs('public/post-picture', $request->picture, $filename);
         }
         else{
             // check for valid file

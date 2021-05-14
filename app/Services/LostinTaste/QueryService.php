@@ -1,5 +1,5 @@
 <?php
-namespace App\Services;
+namespace App\Services\LostinTaste;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\LostinTaste\User;
