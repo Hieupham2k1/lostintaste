@@ -37,7 +37,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    protected $lostintaste = "Modules\LostinTaste\Entities\\";
+    protected $lostintaste = "App\Models\LostinTaste\\";
 
     public function Info(){
         return $this->hasOne($this->lostintaste.'Info');

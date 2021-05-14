@@ -18,7 +18,6 @@
         <div>
             My Projects:
             <div><a href="{{ route('lostintaste.welcome') }}">Lost in Taste</a></div>
-            <div><a href="{{ route('heartcrush.index') }}">Heart Crush</a></div>
             @extends('vue-apps', ['exclude' => ''])
         </div>
     </body>

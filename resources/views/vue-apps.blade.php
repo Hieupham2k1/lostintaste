@@ -1,4 +1,4 @@
-@foreach (['app', 'heartcrush'] as $id)
+@foreach (['app'] as $id)
     @if($id == $exclude) 
         @continue
     @endif

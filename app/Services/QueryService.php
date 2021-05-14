@@ -2,13 +2,13 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Auth;
-use Modules\LostinTaste\Entities\User;
-use Modules\LostinTaste\Entities\Post;
-use Modules\LostinTaste\Entities\SavedPost;
-use Modules\LostinTaste\Entities\Schedule;
-use Modules\LostinTaste\Entities\Attendee;
-use Modules\LostinTaste\Entities\Info;
-use Modules\LostinTaste\Entities\Message;
+use App\Models\LostinTaste\User;
+use App\Models\LostinTaste\Post;
+use App\Models\LostinTaste\SavedPost;
+use App\Models\LostinTaste\Schedule;
+use App\Models\LostinTaste\Attendee;
+use App\Models\LostinTaste\Info;
+use App\Models\LostinTaste\Message;
 
 class QueryService 
 {
