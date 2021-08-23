@@ -124,7 +124,7 @@ class HomeController extends Controller
             $postId = $post->id;
         }
 
-        if($request['is_link']){
+        if($request['is_link'] && (strlen($request->picture) > 0 && $request->picture[0] != '/')){ // is an absolute link
             $filename = $postId . '.png';
             if($request->picture) Storage::putFileAs('public/post-picture', $request->picture, $filename);
         }
@@ -138,7 +138,8 @@ class HomeController extends Controller
             }
         }
         $array['id'] = $postId;
-        $array['picture'] = '/post-picture/' . $filename;
+        if(isset($filename)) $array['picture'] = '/post-picture/' . $filename; // if there is no file, then dont update picture
+        else unset($array['picture']);
         $this->queryService->updatePost($array);
 
         return redirect()->route('lostintaste.post'); 

@@ -7,8 +7,10 @@
                 <source   src="{{ asset('picture/grilled-steak.mp4') }}" type="video/mp4">
             </video>
             <div class="card-img-overlay">
-                <h2 class="card-text text-white">Bạn cần 1 cái cớ để rủ crush đi chơi?</h2>
-                <div><a class="btn btn-primary text-white" href="{{ route('lostintaste.searcher') }}">Search</a></div>
+                <div class="absolute-center">
+                    <h2 class="card-text text-white">Bạn cần 1 cái cớ để rủ crush đi chơi?</h2>
+                    <a class="btn btn-primary text-white" href="{{ route('lostintaste.searcher') }}">Search</a>
+                </div>
             </div>
         </div>
     </div>

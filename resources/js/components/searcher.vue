@@ -23,7 +23,7 @@
 
         <District @select-change="selectChange($event)" />
         <hr>
-        <button @click="search()" class="btn btn-outline-danger">Search</button>
+        <button @click="search()" class="btn btn-outline-danger mb-3">Search</button>
         <Post 
             v-for="data in foods" 
             :key="data.id" 
